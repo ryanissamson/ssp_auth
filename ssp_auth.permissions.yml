@@ -1,0 +1,4 @@
+'administer ssp_auth':
+  title: 'Administer ssp_auth'
+  description: 'Grants access to the ssp_auth module administration page.'
+  restrict access: true

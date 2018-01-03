@@ -1,0 +1,7 @@
+ssp_auth.settings:
+  path: '/admin/config/people/ssp_auth'
+  defaults:
+    _title: 'Drupalauth for SimpleSAMLphp Settings'
+    _form: '\Drupal\ssp_auth\Form\ssp_auth_settings'
+  requirements:
+    _permission: 'administer ssp_auth'

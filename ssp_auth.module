@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * The ssp_auth module for Drupal.
+ *
+ * This module enables the SimpleSAMLphp Identity Provider login experience for
+ * a Drupal site.
+ *
+ */
+
+use Drupal\user\UserInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\ssp_auth\SSPAuth;
+
+/**
+ * Implements hook_user_login.
+ *
+ * @inheritdoc
+ */
+function ssp_auth_user_login(UserInterface $account) {
+  $ssp_auth = SSPAuth::create(\Drupal::getContainer());
+  $ssp_auth->setCookie($account->id() , $account->getAccountName());
+}
+
+/**
+ * Implements hook_user_logout.
+ *
+ * @inheritdoc
+ */
+function ssp_auth_user_logout(\Drupal\user\UserInterface $account) {
+  $ssp_auth = SSPAuth::create(\Drupal::getContainer());
+  // Get the configuration information from SimpleSAMLphp.
+  $sspConfig = $ssp_auth->getSSPConfig();
+
+  // If we don't have configuration, exit without doing anything.
+  if (empty($sspConfig)) {
+    // Log a message if configuration is not found.
+    $this->logger->notice('Could not use drupalauth for %name, could not get the SimpleSAMLphp configuration.', ['%name' => $username]);
+    return;
+  }
+
+  // Delete the cookie.
+  setcookie($sspConfig['cookie_name'], "", time() - 3600 , $sspConfig['baseurlpath']);
+}
+
+/**
+ * Implements hook_entity_view.
+ *
+ * @inheritdoc
+ */
+function ssp_auth_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  if ($entity->getEntityTypeId() !== 'user') {
+    return;
+  }
+  // TODO: Why is this runnning on an entity view? I don't see why it would.
+  $ssp_auth = SSPAuth::create(\Drupal::getContainer());
+  $ssp_auth->setCookie($entity->id(), $entity->name);
+}
